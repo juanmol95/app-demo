@@ -20,17 +20,17 @@ servidor\dataverse_sesion.json       Sesión de Dataverse de este computador (pe
 CÓMO ARRANCARLA
 ---------------
 1. Servidor (una ventana de PowerShell, dejarla abierta):
-     cd "C:\Users\USER\Documents\Juan Diego\IBIOHACK\Registro Implantes BSC\servidor"
+     cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0\servidor"
      python "App (1).py"
    Debe decir: "Los pacientes se guardan en: Dataverse https://orgc950bd5e.crm2.dynamics.com"
 
 2. App (otra ventana de PowerShell, dejarla abierta):
-     cd "C:\Users\USER\Documents\Juan Diego\IBIOHACK\Registro Implantes BSC"
+     cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0"
      python -m http.server 8766 --bind 127.0.0.1
    Abrir en el navegador:  http://localhost:8766/
 
 3. Si al guardar sale un error de Dataverse (la sesión caduca cada cierto tiempo):
-     cd "C:\Users\USER\Documents\Juan Diego\IBIOHACK\Registro Implantes BSC\servidor"
+     cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0\servidor"
      python dataverse_conexion.py
    e iniciar sesión en la ventana de Microsoft que se abre.
 
