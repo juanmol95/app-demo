@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Boston Scientific</title>
+
+    <!-- Conexión con nuestro CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- PRIMERA PANTALLA -->
+    <main id="pantalla-inicio" class="pantalla-inicio">
+
+        <div class="logo">
+
+            <div class="nombre-empresa">
+                <span>Boston</span>
+                <span>Scientific</span>
+            </div>
+
+            <div class="eslogan">
+                Advancing science for life<sup>™</sup>
+            </div>
+
+            <button class="boton-empezar" onclick="empezar()">
+                EMPEZAR
+            </button>
+
+        </div>
+
+    </main>
+
+
+<!-- SEGUNDA PANTALLA -->
+<main id="pantalla-opciones" class="pantalla-opciones">
+
+    <div class="contenido-opciones">
+
+        <h1>¿Qué necesitas hacer hoy?</h1>
+
+        <div class="botones-opciones">
+
+            <button class="boton-opcion" onclick="irARegistrar()">
+                REGISTRAR<br>INFORMACIÓN
+            </button>
+
+            <button class="boton-opcion" onclick="irABuscar()">
+                BUSCAR<br>INFORMACIÓN
+            </button>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- PÁGINA 3.1 — REGISTRAR -->
+<main id="pantalla-registrar" class="pantalla-registrar">
+
+    <button class="boton-volver" onclick="volverAOpciones()">
+    ← VOLVER
+    </button>
+    
+    <div class="contenido-tercera">
+
+        <h1>Registrar información</h1>
+
+        <!-- Formulario de registro de paciente (carpeta formulario/) -->
+        <iframe class="marco-formulario" src="formulario/index.html?modo=registro" allow="camera" title="Registro de paciente"></iframe>
+
+    </div>
+
+</main>
+
+
+<!-- PÁGINA 3.2 — BUSCAR -->
+<main id="pantalla-buscar" class="pantalla-buscar">
+    
+    <button class="boton-volver" onclick="volverAOpciones()">
+        ← VOLVER
+    </button>
+
+    <div class="contenido-tercera">
+
+        <h1>Buscar información</h1>
+
+        <!-- Consulta de paciente por cédula (carpeta formulario/) -->
+        <iframe class="marco-formulario" src="formulario/index.html?modo=consulta" allow="camera" title="Consultar paciente por cédula"></iframe>
+
+        <!-- Búsqueda por código de barras: aún sin funcionalidad, oculta por ahora -->
+        <div class="metodos-busqueda" hidden>
+
+            <div class="metodo-busqueda">
+
+                <h2>Escanear código de barras</h2>
+
+                <div class="lector-codigo">
+                    <span>📷</span>
+                    <p>Escanear código</p>
+                </div>
+
+            </div>
+
+
+            <div class="separador">
+                O
+            </div>
+
+
+            <div class="metodo-busqueda">
+
+                <h2>Introducir código manualmente</h2>
+
+                <input
+                    type="text"
+                    class="entrada-codigo"
+                    placeholder="Código de barras"
+                >
+
+                <button class="boton-buscar">
+                    BUSCAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+    <!-- Conexión con JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>

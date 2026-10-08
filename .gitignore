@@ -1,0 +1,7 @@
+# Sesión de Dataverse de quien inició sesión en este computador (personal)
+servidor/dataverse_sesion.json
+# Datos de pacientes y reportes generados: nunca subir
+servidor/registros.db
+servidor/salidas/
+# Archivos temporales de Python
+__pycache__/

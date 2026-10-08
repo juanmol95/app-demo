@@ -1,0 +1,44 @@
+REGISTRO DE IMPLANTES - BOSTON SCIENTIFIC (IBIOHACK)
+====================================================
+Última versión de la aplicación.
+
+ARCHIVOS
+--------
+index.html, style.css, script.js     La app: pantallas Inicio, Opciones, Registrar y Buscar
+formulario\index.html                Formulario de registro y consulta por cédula
+formulario\lector_boston.html        Lector de etiqueta del dispositivo (de Lector-De-Boston)
+formulario\exportar_catalogos.py     Convierte el Excel de la empresa en catalogos.json (opcional)
+
+servidor\App (1).py                  Servidor Python (puerto 8001): guarda y consulta pacientes
+servidor\dataverse_conexion.py       Inicio de sesión con Microsoft Dataverse
+servidor\dataverse_registros.py      Guardar / consultar / eliminar en Dataverse
+servidor\dataverse_crear_tablas.py   Crea las tablas en Dataverse (ya se ejecutó una vez)
+servidor\generador_reporte.py        Reporte oficial en Excel (necesita la plantilla de la empresa)
+servidor\dataverse_sesion.json       Sesión de Dataverse de este computador (personal, no compartir)
+
+
+CÓMO ARRANCARLA
+---------------
+1. Servidor (una ventana de PowerShell, dejarla abierta):
+     cd "C:\Users\USER\Documents\Juan Diego\IBIOHACK\Registro Implantes BSC\servidor"
+     python "App (1).py"
+   Debe decir: "Los pacientes se guardan en: Dataverse https://orgc950bd5e.crm2.dynamics.com"
+
+2. App (otra ventana de PowerShell, dejarla abierta):
+     cd "C:\Users\USER\Documents\Juan Diego\IBIOHACK\Registro Implantes BSC"
+     python -m http.server 8766 --bind 127.0.0.1
+   Abrir en el navegador:  http://localhost:8766/
+
+3. Si al guardar sale un error de Dataverse (la sesión caduca cada cierto tiempo):
+     cd "C:\Users\USER\Documents\Juan Diego\IBIOHACK\Registro Implantes BSC\servidor"
+     python dataverse_conexion.py
+   e iniciar sesión en la ventana de Microsoft que se abre.
+
+
+DATAVERSE
+---------
+Entorno de desarrollo: https://orgc950bd5e.crm2.dynamics.com
+Power Apps: https://make.powerapps.com/environments/2cf3c111-d98a-e815-9eed-145a38ab8feb/home
+Solución "Registro de Implantes": tablas Pacientes, Implantes, Electrodos,
+Médicos del implante y Hospitales.
+Solo datos de prueba: entorno de desarrollo con cuenta de estudiante.

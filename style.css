@@ -1,0 +1,527 @@
+/* Quitamos los espacios que el navegador pone por defecto */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Toda la página */
+body {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Pantalla azul */
+.pantalla-inicio {
+    width: 100%;
+    min-height: 100vh;
+
+    background-color: #003C75;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+}
+
+/* Todo el contenido del logo */
+.logo {
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* BOSTON SCIENTIFIC */
+.nombre-empresa {
+    font-family: "Bodoni 72", "Bodoni MT", Didot, Georgia, serif;
+
+    font-size: clamp(4rem, 10vw, 7rem);
+
+    line-height: 0.70;
+
+    font-weight: 400;
+
+    letter-spacing: -0.06em;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* Segunda línea */
+.nombre-empresa span:last-child {
+    margin-left: -0.08em;
+}
+
+/* ADVANCING SCIENCE FOR LIFE */
+.eslogan {
+    margin-top: 55px;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+
+    font-style: italic;
+
+    font-weight: 400;
+
+    letter-spacing: -0.02em;
+
+    white-space: nowrap;
+}
+
+/* ™ */
+.eslogan sup {
+    font-size: 0.4em;
+
+    position: relative;
+    top: -0.3em;
+
+    margin-left: 2px;
+}
+
+
+/* ========================= */
+/* CELULARES */
+/* ========================= */
+
+@media (max-width: 600px) {
+
+    .nombre-empresa {
+        font-size: clamp(3.2rem, 16vw, 5rem);
+    }
+
+    .eslogan {
+        margin-top: 40px;
+
+        font-size: clamp(1.05rem, 5vw, 1.5rem);
+    }
+}
+
+
+
+/* BOTÓN EMPEZAR */
+
+.boton-empezar {
+    margin-top: 90px;
+
+    width: 130px;
+    min-height: 55px;
+    padding: 15px 25px;
+
+    background-color: white;
+    color: #003C75;
+
+    border: none;
+    border-radius: 6px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+
+    letter-spacing: 0.06em;
+
+    cursor: pointer;
+
+    box-shadow: 0 7px 0 rgba(0, 0, 0, 0.20);
+
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.boton-empezar:active {
+    transform: translateY(6px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.20);
+}
+
+
+
+/* SEGUNDA PANTALLA */
+
+.pantalla-opciones {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #003C75;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.contenido-opciones {
+    width: 100%;
+    max-width: 650px;
+}
+
+.contenido-opciones h1 {
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    margin-bottom: 65px;
+}
+
+.botones-opciones {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+}
+
+.boton-opcion {
+    width: min(100%, 430px);
+    min-height: 105px;
+    padding: 20px 30px;
+
+    background-color: white;
+    color: #003C75;
+
+    border: none;
+    border-radius: 6px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.20);
+
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+
+
+/* Efecto cuando se presiona */
+
+.boton-opcion:active {
+    transform: translateY(7px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.20);
+}
+
+
+
+/* Ajustes para celular */
+
+@media (max-width: 600px) {
+
+    .contenido-opciones h1 {
+        margin-bottom: 50px;
+        font-size: 2rem;
+    }
+
+    .boton-opcion {
+        min-height: 95px;
+        width: 90%;
+    }
+
+}
+
+
+
+/* ========================= */
+/* PÁGINAS 3.1 Y 3.2 */
+/* ========================= */
+
+
+/* PÁGINA 3.1 */
+
+.pantalla-registrar {
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+    background-color: #003C75;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    padding: 40px 20px;
+}
+
+
+/* PÁGINA 3.2 */
+
+.pantalla-buscar {
+    position: relative;
+    
+    width: 100%;
+    min-height: 100vh;
+    background-color: #003C75;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    padding: 40px 20px;
+}
+
+
+.contenido-tercera {
+    width: 100%;
+    max-width: 750px;
+}
+
+
+.contenido-tercera h1 {
+    color: white;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: clamp(2rem, 5vw, 3.2rem);
+
+    font-weight: 400;
+
+    margin-bottom: 60px;
+}
+
+
+/* MÉTODOS DE BÚSQUEDA */
+
+.metodos-busqueda {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 30px;
+}
+
+
+.metodo-busqueda {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.metodo-busqueda h2 {
+    color: white;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+
+    font-weight: 400;
+
+    margin-bottom: 20px;
+}
+
+
+/* LECTOR DE CÓDIGO */
+
+.lector-codigo {
+    width: min(90%, 400px);
+    min-height: 170px;
+
+    background-color: white;
+
+    border-radius: 6px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.20);
+
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+
+.lector-codigo span {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+
+.lector-codigo p {
+    color: #003C75;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+
+/* EFECTO AL PRESIONAR */
+
+.lector-codigo:active {
+    transform: translateY(7px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.20);
+}
+
+
+/* SEPARADOR */
+
+.separador {
+    color: white;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+
+/* ENTRADA DEL CÓDIGO */
+
+.entrada-codigo {
+    width: min(90%, 400px);
+
+    height: 55px;
+
+    padding: 0 18px;
+
+    background-color: white;
+
+    border: none;
+    border-radius: 6px;
+
+    color: #003C75;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 1rem;
+
+    outline: none;
+
+    text-align: center;
+}
+
+
+.entrada-codigo::placeholder {
+    color: #777;
+}
+
+
+/* BOTÓN BUSCAR */
+
+.boton-buscar {
+    margin-top: 20px;
+
+    width: 190px;
+    min-height: 55px;
+
+    background-color: white;
+    color: #003C75;
+
+    border: none;
+    border-radius: 6px;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 1rem;
+    font-weight: 700;
+
+    letter-spacing: 0.06em;
+
+    cursor: pointer;
+
+    box-shadow: 0 7px 0 rgba(0, 0, 0, 0.20);
+
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+
+.boton-buscar:active {
+    transform: translateY(6px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.20);
+}
+
+
+/* CELULAR */
+
+@media (max-width: 600px) {
+
+    .contenido-tercera h1 {
+        font-size: 2rem;
+        margin-bottom: 45px;
+    }
+
+    .lector-codigo {
+        min-height: 150px;
+    }
+
+}
+
+
+
+/* BOTÓN VOLVER */
+
+.boton-volver {
+    position: absolute;
+    top: 30px;
+    right: 35px;
+
+    background-color: transparent;
+    color: white;
+
+    border: none;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+
+    letter-spacing: 0.05em;
+
+    cursor: pointer;
+
+    padding: 10px;
+
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.boton-volver:hover {
+    opacity: 0.75;
+}
+
+.boton-volver:active {
+    transform: translateX(3px);
+}
+
+
+/* AJUSTE PARA CELULAR */
+
+@media (max-width: 600px) {
+
+    .boton-volver {
+        top: 20px;
+        right: 20px;
+        font-size: 0.9rem;
+    }
+
+}
+
+
+/* FORMULARIO INCRUSTADO (registro / consulta por cédula) */
+
+.contenido-tercera:has(.marco-formulario) {
+    max-width: 960px;
+}
+
+.contenido-tercera:has(.marco-formulario) h1 {
+    margin-bottom: 24px;
+}
+
+.marco-formulario {
+    width: 100%;
+    height: 80vh;
+    border: none;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.metodos-busqueda[hidden] {
+    display: none;
+}
