@@ -1,0 +1,15 @@
+# Configuración para Render (New + > Blueprint > este repositorio).
+# Los valores secretos NO van aquí: Render los pide al crear el servicio.
+services:
+  - type: web
+    name: registro-implantes
+    runtime: docker
+    plan: free
+    healthCheckPath: /entrar
+    envVars:
+      - key: APP_CLAVE            # contraseña del equipo para entrar a la app
+        sync: false
+      - key: DATAVERSE_SESION     # sesión de Dataverse (archivo para_render/DATAVERSE_SESION.txt)
+        sync: false
+      - key: PLANTILLA_B64        # plantilla de Excel (archivo para_render/PLANTILLA_B64.txt)
+        sync: false

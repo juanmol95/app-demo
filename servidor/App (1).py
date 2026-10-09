@@ -16,7 +16,11 @@ import threading
 from pathlib import Path
 import openpyxl
 from fastapi import Body
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, HTMLResponse, JSONResponse, RedirectResponse
+from fastapi import Form, Request
+import hashlib
+import hmac
+import time
 from fastapi.staticfiles import StaticFiles
 import io
 import copy
@@ -25,7 +29,8 @@ import openpyxl.utils
 import generador_reporte as generador   # el módulo que genera el Implant Report
 import dataverse_registros as dvr       # guardar y consultar pacientes en Microsoft Dataverse
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if os.path.isfile(r'C:\Program Files\Tesseract-OCR\tesseract.exe'):
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 app = FastAPI()
 
@@ -425,6 +430,9 @@ def eliminar_registro(documento: str):
 # Se abre la plantilla de la empresa, se conservan sus dos filas de encabezado (nombres y grupos),
 # se quitan las filas de ejemplo y se escribe un paciente por fila desde la fila 3.
 PLANTILLA_EXPORTAR = CARPETA / "IMPLANT REPORTS - PLANTILLA UNIANDES_0685.xlsx"
+if not PLANTILLA_EXPORTAR.is_file() and os.environ.get("PLANTILLA_B64"):
+    import base64
+    PLANTILLA_EXPORTAR.write_bytes(base64.b64decode(os.environ["PLANTILLA_B64"]))
 FILA_INICIO = 3
 
 
@@ -619,6 +627,71 @@ def descargar_reporte(nombre: str):
 # Solo se publican los archivos de la app; la carpeta "servidor" (sesión, plantilla, código) no.
 APP_WEB = CARPETA.parent
 
+# ---------- Contraseña del equipo ----------
+# Si existe la variable APP_CLAVE (en Render), toda la app pide esa contraseña.
+# En este computador, sin APP_CLAVE, se abre directamente como siempre.
+APP_CLAVE = os.environ.get("APP_CLAVE", "")
+COOKIE_ACCESO = "acceso_registro_implantes"
+
+
+def ficha_acceso():
+    return hmac.new(APP_CLAVE.encode("utf-8"), b"registro-implantes", hashlib.sha256).hexdigest()
+
+
+PAGINA_ENTRAR = """<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Boston Scientific - Entrar</title>
+<style>
+  html { color-scheme: light; }
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+         background: #003C75; font-family: Arial, Helvetica, sans-serif; padding: 20px; box-sizing: border-box; }
+  form { background: #fff; border-radius: 6px; padding: 32px 28px; width: min(100%, 360px); text-align: center;
+         box-shadow: 0 8px 0 rgba(0, 0, 0, 0.20); }
+  h1 { font-family: "Bodoni 72", "Bodoni MT", Didot, Georgia, serif; font-weight: 400; color: #003C75;
+       font-size: 2.2rem; line-height: 1.05; margin: 0 0 22px; }
+  input { width: 100%; box-sizing: border-box; padding: 14px; font-size: 1rem; border: 2px solid #c7d3e0;
+          border-radius: 6px; text-align: center; }
+  input:focus { outline: none; border-color: #003C75; }
+  button { margin-top: 18px; width: 100%; min-height: 52px; background: #003C75; color: #fff; border: none;
+           border-radius: 6px; font-size: 1rem; font-weight: 700; letter-spacing: 0.06em; cursor: pointer;
+           box-shadow: 0 6px 0 rgba(0, 0, 0, 0.20); }
+  button:active { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.20); }
+  .error { color: #b3261e; font-weight: 700; font-size: 0.9rem; margin: 14px 0 0; }
+</style></head><body>
+<form method="post" action="/entrar">
+  <h1>Boston<br>Scientific</h1>
+  <input type="password" name="clave" placeholder="Contraseña del equipo" autocomplete="current-password" autofocus required>
+  <button type="submit">ENTRAR</button>
+  {error}
+</form></body></html>"""
+
+
+@app.middleware("http")
+async def pedir_clave(request, call_next):
+    if not APP_CLAVE or request.url.path == "/entrar":
+        return await call_next(request)
+    if hmac.compare_digest(request.cookies.get(COOKIE_ACCESO, ""), ficha_acceso()):
+        return await call_next(request)
+    if request.url.path.startswith("/api/"):
+        return JSONResponse({"detail": "Sesión no iniciada: vuelve a abrir la app e ingresa la contraseña."}, status_code=401)
+    return RedirectResponse("/entrar", status_code=303)
+
+
+@app.get("/entrar")
+def pagina_entrar():
+    return HTMLResponse(PAGINA_ENTRAR.replace("{error}", ""))
+
+
+@app.post("/entrar")
+def entrar(request: Request, clave: str = Form("")):
+    if APP_CLAVE and hmac.compare_digest(clave.encode("utf-8"), APP_CLAVE.encode("utf-8")):
+        respuesta = RedirectResponse("/", status_code=303)
+        segura = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
+        respuesta.set_cookie(COOKIE_ACCESO, ficha_acceso(), max_age=30 * 24 * 3600, httponly=True,
+                             samesite="lax", secure=segura)
+        return respuesta
+    time.sleep(1)                     # frena los intentos repetidos
+    return HTMLResponse(PAGINA_ENTRAR.replace("{error}", '<p class="error">Contraseña incorrecta.</p>'), status_code=401)
+
 
 @app.middleware("http")
 async def revisar_version_nueva(request, call_next):
@@ -663,4 +736,4 @@ if __name__ == "__main__":
     else:
         print("Abre la app en el navegador:  http://127.0.0.1:8001/")
     print("Los pacientes se guardan en:", ("Dataverse " + dvr.dv.DATAVERSE_URL) if USAR_DATAVERSE else BASE_DATOS)
-    uvicorn.run(app, host=HOST, port=8001, ssl_certfile=certificado, ssl_keyfile=clave)
+    uvicorn.run(app, host=HOST, port=int(os.environ.get("PORT", 8001)), ssl_certfile=certificado, ssl_keyfile=clave)

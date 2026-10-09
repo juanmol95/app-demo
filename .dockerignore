@@ -1,0 +1,10 @@
+.git
+**/__pycache__
+servidor/registros.db
+servidor/salidas
+servidor/certificado
+servidor/dataverse_sesion.json
+servidor/*.xlsx
+servidor/~$*
+para_render
+*.bat

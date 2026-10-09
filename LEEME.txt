@@ -16,6 +16,8 @@ servidor\dataverse_conexion.py       Inicio de sesión con Microsoft Dataverse
 servidor\dataverse_registros.py      Guardar / consultar / eliminar en Dataverse
 servidor\dataverse_crear_tablas.py   Crea las tablas en Dataverse (ya se ejecutó una vez)
 servidor\certificado_https.py        Crea el certificado https del modo celular
+servidor\exportar_para_render.py    Prepara los datos secretos para Render
+Dockerfile, render.yaml             Publicación en Render
 servidor\generador_reporte.py        Reporte oficial en Excel (necesita la plantilla de la empresa)
 servidor\dataverse_sesion.json       Sesión de Dataverse de este computador (personal, no compartir)
 
@@ -54,6 +56,23 @@ del computador. El modo celular usa https (certificado propio) para que la cáma
    cédula y el guardado funcionan.
 4. Si Windows pregunta si Python puede usar la red, permite SOLO "Redes privadas".
 (El certificado se crea solo en servidor\certificado\ y no se sube a GitHub.)
+
+
+EN INTERNET CON RENDER (celular desde cualquier red, con cámara)
+-----------------------------------------------------------------
+1. En este computador:  cd servidor  y  python exportar_para_render.py
+   (inicias sesión en el navegador; crea la carpeta para_render con dos archivos).
+2. En render.com (cuenta gratis con GitHub): New + > Blueprint > repositorio app-demo.
+   Render lee render.yaml y pide tres valores:
+     APP_CLAVE         la contraseña del equipo (inventa una fuerte)
+     DATAVERSE_SESION  el contenido de para_render\DATAVERSE_SESION.txt
+     PLANTILLA_B64     el contenido de para_render\PLANTILLA_B64.txt
+3. Al terminar, Render da la dirección (https://....onrender.com). Se abre en el
+   celular, se pone la contraseña y funciona todo (cámara, cédula, Dataverse, Excel).
+- El plan gratis se duerme tras 15 min sin uso: la primera visita tarda ~50 s.
+- Si sale "la sesión de Dataverse del servidor caducó": repite el paso 1 y cambia
+  DATAVERSE_SESION en Render (Environment).
+- para_render contiene tu credencial: no la compartas ni la subas a GitHub.
 
 
 DATAVERSE

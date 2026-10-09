@@ -1,0 +1,11 @@
+fastapi==0.142.4
+uvicorn==0.54.0
+python-multipart==0.0.32
+opencv-python-headless==4.13.0.92
+numpy==2.4.6
+zxing-cpp==3.1.1
+pytesseract==0.3.13
+openpyxl==3.1.5
+requests==2.34.2
+msal==1.39.0
+azure-identity==1.26.0

@@ -11,3 +11,5 @@ servidor/IMPLANT REPORTS - PLANTILLA UNIANDES_0685.xlsx
 ~$*
 # Certificado https local (contiene una clave privada)
 servidor/certificado/
+# Datos secretos para Render (sesión de Dataverse y plantilla)
+para_render/

@@ -30,11 +30,42 @@ CARPETA = Path(__file__).resolve().parent
 ARCHIVO_SESION = CARPETA / "dataverse_sesion.json"     # quién inició sesión (no contiene contraseñas ni tokens)
 CACHE = TokenCachePersistenceOptions(name="registro_implantes_dataverse")   # tokens cifrados por Windows
 
+# Aplicación pública de Microsoft que usa el inicio de sesión de desarrollo (la misma de azure-identity)
+CLIENTE = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+
 _credencial = None
+
+
+def hay_sesion():
+    """En este computador: dataverse_sesion.json. En Render: la variable secreta DATAVERSE_SESION."""
+    return ARCHIVO_SESION.is_file() or bool(os.environ.get("DATAVERSE_SESION"))
+
+
+class _CredencialRender:
+    """Sesión llevada a Render (variable DATAVERSE_SESION, creada con exportar_para_render.py)."""
+
+    def __init__(self, texto_base64):
+        import base64
+        import msal
+        cache = msal.SerializableTokenCache()
+        cache.deserialize(base64.b64decode(texto_base64).decode("utf-8"))
+        self.app = msal.PublicClientApplication(CLIENTE, authority=f"https://login.microsoftonline.com/{TENANT_ID}",
+                                                token_cache=cache)
+
+    def get_token(self, alcance):
+        from types import SimpleNamespace
+        cuentas = self.app.get_accounts()
+        r = self.app.acquire_token_silent([alcance], account=cuentas[0] if cuentas else None)
+        if not r or "access_token" not in r:
+            raise RuntimeError("la sesión de Dataverse del servidor caducó; genera una nueva con "
+                               "exportar_para_render.py y actualiza DATAVERSE_SESION en Render")
+        return SimpleNamespace(token=r["access_token"])
 
 
 def credencial():
     global _credencial
+    if _credencial is None and os.environ.get("DATAVERSE_SESION"):
+        _credencial = _CredencialRender(os.environ["DATAVERSE_SESION"])
     if _credencial is None:
         registro = None
         if ARCHIVO_SESION.is_file():

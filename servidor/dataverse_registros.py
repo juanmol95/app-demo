@@ -17,8 +17,8 @@ _navegacion = {}    # (tabla, columna de búsqueda) -> propiedad de navegación 
 
 
 def disponible():
-    """Hay Dataverse si alguien ya inició sesión con dataverse_conexion.py en este computador."""
-    return dv.ARCHIVO_SESION.is_file()
+    """Hay Dataverse si alguien inició sesión en este computador o si hay sesión en Render."""
+    return dv.hay_sesion()
 
 
 def conjunto(tabla):

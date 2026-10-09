@@ -633,9 +633,10 @@
 
 <script>
 const $ = id => document.getElementById(id);
-// Si la página la sirve el propio servidor Python (puerto 8001), usa su misma dirección.
-// En cualquier otro caso (archivo, GitHub Pages, otra app) usa el servidor local.
-const RAIZ = (location.port === "8001") ? location.origin : "http://127.0.0.1:8001";
+// Si la página la entrega el propio servidor (este computador, celular en la red o Render), usa su misma dirección.
+// Abierta como archivo o desde GitHub Pages, usa el servidor de este computador.
+const RAIZ = (location.protocol === "file:" || location.hostname.endsWith("github.io"))
+  ? "http://127.0.0.1:8001" : location.origin;
 // ?modo=registro o ?modo=consulta: muestra solo esa parte (cuando va incrustado en otra app)
 const MODO = new URLSearchParams(location.search).get("modo");
 const API_URL = RAIZ + "/api";
