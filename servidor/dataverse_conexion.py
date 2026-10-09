@@ -14,9 +14,11 @@ Se puede cambiar el entorno con las variables de entorno DATAVERSE_URL y DATAVER
 """
 
 import os
+import time
 from pathlib import Path
 
 import requests
+from azure.core.exceptions import ServiceRequestError
 from azure.identity import AuthenticationRecord, InteractiveBrowserCredential, TokenCachePersistenceOptions
 
 DATAVERSE_URL = os.environ.get("DATAVERSE_URL", "https://orgc950bd5e.crm2.dynamics.com").rstrip("/")
@@ -51,17 +53,29 @@ def iniciar_sesion():
     return registro
 
 
+_sesion_http = requests.Session()   # reutiliza la conexión: menos búsquedas de la dirección de Dataverse
+REINTENTOS = 3
+
+
 def api(metodo, ruta, **kwargs):
-    """Llama a la API web de Dataverse. Devuelve la respuesta de requests."""
-    token = credencial().get_token(ALCANCE).token
-    encabezados = {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/json",
-        "OData-MaxVersion": "4.0",
-        "OData-Version": "4.0",
-    }
-    encabezados.update(kwargs.pop("headers", {}))
-    return requests.request(metodo, API + ruta, headers=encabezados, timeout=60, **kwargs)
+    """Llama a la API web de Dataverse. Devuelve la respuesta de requests.
+    Si falla la conexión (a veces la red tarda en encontrar la dirección), reintenta antes de rendirse."""
+    extra = kwargs.pop("headers", {})
+    for intento in range(1, REINTENTOS + 1):
+        try:
+            token = credencial().get_token(ALCANCE).token
+            encabezados = {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json",
+                "OData-MaxVersion": "4.0",
+                "OData-Version": "4.0",
+            }
+            encabezados.update(extra)
+            return _sesion_http.request(metodo, API + ruta, headers=encabezados, timeout=60, **kwargs)
+        except (requests.ConnectionError, ServiceRequestError):
+            if intento == REINTENTOS:
+                raise
+            time.sleep(intento)          # 1 s, luego 2 s
 
 
 if __name__ == "__main__":
