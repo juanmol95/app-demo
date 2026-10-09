@@ -1440,9 +1440,12 @@ window.addEventListener("message", e => {
   const marco = $("marco_lector");
   if (!marco || e.source !== marco.contentWindow || !e.data) return;
   if (e.data.tipo === "lector-boston-alto") {
-    marco.style.height = Math.max(400, Math.ceil(e.data.alto) + 4) + "px";
-    return;
+  const alto = Math.min(900, Math.max(400, Math.ceil(e.data.alto) + 4));
+  if (Math.abs(marco.offsetHeight - alto) > 10) {
+    marco.style.height = alto + "px";
   }
+  return;
+}
   if (e.data.tipo !== "lector-boston") return;
   const d = e.data.datos || {};
   const pasados = [];
