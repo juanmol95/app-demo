@@ -43,7 +43,24 @@
   /* Campos que llena el lector de dispositivo */
   .disp-lleno { animation: disp-destello 1.6s ease-out; }
   @keyframes disp-destello { from { background: #fff3a8; box-shadow: 0 0 0 3px #ffd84d; } to { background: #fff; box-shadow: none; } }
-  @media (max-width: 600px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .campo {
+    min-width: 0;
+  }
+
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
 
   /* ESTILOS DE LA PLANILLA / REPORTE VISUAL */
   #vistaPreviaContainer { display: block; margin-top: 2rem; background: #fff; border: 2px solid #111; padding: 1.5rem; font-family: Arial, sans-serif; font-size: 13px; color: #000; }
