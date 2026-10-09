@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Lector de dispositivos Boston Scientific: repositorio valerymontanez-jpg/Lector-De-Boston.
-     Cambios: catálogo corregido (15 productos), CSS de botones ocultos y bloque de integración con el formulario al final del script. -->
+     Cambios: catálogo corregido (15 productos), colores de la app, CSS de botones ocultos y bloque de integración con el formulario al final del script. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -8,22 +8,27 @@
 <meta name="theme-color" content="#0b1720">
 <title>Lector de dispositivos Boston Scientific</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1419;--panel:#12232b;--panel2:#172d36;--line:#2a414a;--text:#eef7fa;--muted:#a5bdc7;--accent:#56c5e5;--good:#65d6a3;--warn:#ffca70;--bad:#ff8585}
+/* Colores de la pantalla inicial de la app: azul Boston Scientific #003C75 y blanco */
+:root{color-scheme:light;--bg:#ffffff;--panel:#eef3f8;--panel2:#ffffff;--line:#c7d3e0;--text:#1c2b39;--muted:#5b6b7c;--accent:#003C75;--good:#1f7a4a;--warn:#9a5b00;--bad:#b3261e}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Arial,Helvetica,sans-serif}
 main{width:min(1200px,100% - 32px);margin:32px auto}
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding-bottom:20px;border-bottom:1px solid var(--line)}
-h1{font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.15;margin:0 0 8px}
+h1{font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.15;margin:0 0 8px;color:var(--accent)}
 p{margin:0;color:var(--muted)}
 .stats{white-space:nowrap;font-size:.9rem;color:var(--muted)}
 .layout{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.15fr);gap:18px;margin-top:20px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
-h2{font-size:1.05rem;margin:0 0 14px}
+.layout.sin-resultado{grid-template-columns:minmax(0,1fr)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;min-width:0}
+h2{font-size:1.05rem;margin:0 0 14px;color:var(--accent)}
+h1,h2{font-family:"Bodoni 72","Bodoni MT",Didot,Georgia,serif}h1{font-weight:400}h2{font-size:1.3rem}
 label,.eyebrow{display:block;font-size:.78rem;font-weight:750;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .searchrow{display:flex;gap:8px}
-input[type=text]{width:100%;min-width:0;background:#09151b;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:13px 12px;font:inherit}
-button,.filelabel{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);padding:11px 14px;font:inherit;font-weight:650;cursor:pointer;text-decoration:none}
-button.primary{background:var(--accent);border-color:var(--accent);color:#05202a}
+input[type=text]{width:100%;min-width:0;background:#fff;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:13px 12px;font:inherit}
+button,.filelabel{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--accent);border-radius:6px;background:#fff;color:var(--accent);padding:11px 14px;font:inherit;font-weight:700;letter-spacing:.05em;cursor:pointer;text-decoration:none;box-shadow:0 5px 0 rgba(0,0,0,.20);transition:transform .1s ease,box-shadow .1s ease}
+.filelabel{text-transform:none;font-size:1rem;margin-bottom:0}
+button:active,.filelabel:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.20)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button:disabled{opacity:.5;cursor:not-allowed}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 #video{display:block;width:100%;max-height:420px;aspect-ratio:4/3;object-fit:cover;background:#050a0d;border-radius:12px;margin-top:14px}
@@ -32,10 +37,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .status.error{color:var(--bad)}.status.success{color:var(--good)}
 .tip{font-size:.88rem;margin-top:10px}
 .resulttop{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.pill{border-radius:999px;padding:5px 10px;background:#081317;color:var(--accent);font-size:.75rem;font-weight:800;text-transform:uppercase}
+.pill{border-radius:999px;padding:5px 10px;background:#fff;border:1px solid var(--line);color:var(--accent);font-size:.75rem;font-weight:800;text-transform:uppercase}
 .category{color:var(--accent);font-weight:800;letter-spacing:.06em;font-size:.85rem;margin-top:16px}
 .productname{font-size:clamp(1.3rem,2.6vw,2rem);line-height:1.2;margin:6px 0 18px;overflow-wrap:anywhere}
-.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fff}
 .field{padding:13px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);min-width:0}
 .field:nth-child(2n){border-right:0}
 .field dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}
@@ -49,7 +54,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 table{width:100%;border-collapse:collapse;font-size:.88rem}
 th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
 th{color:var(--muted);font-size:.75rem;text-transform:uppercase}
-tr[data-row]{cursor:pointer}tr[data-row]:hover{background:var(--panel2)}
+tr[data-row]{cursor:pointer}tr[data-row]:hover{background:#fff}
 footer{margin-top:20px;font-size:.82rem;color:var(--muted)}
 #photo,#photoInput{display:none}
 [hidden]{display:none!important}
@@ -60,14 +65,13 @@ footer{margin-top:20px;font-size:.82rem;color:var(--muted)}
 <body>
 <main>
 <header>
-  <div><h1>Lector de dispositivos Boston Scientific</h1><p>Escanea una etiqueta para identificar el producto y mostrar los datos disponibles.</p></div>
+  <div><h1>Lector de dispositivos Boston Scientific</h1></div>
   <div class="stats"><strong id="productCount">—</strong> productos · <strong id="categoryCount">—</strong> categorías</div>
 </header>
 
-<div class="layout">
+<div class="layout sin-resultado" id="layout">
   <section class="panel">
     <h2>Leer un código</h2>
-    <label for="manualCode">GTIN, UPN o número de catálogo</label>
     <form id="searchForm" class="searchrow">
       <input id="manualCode" type="text" autocomplete="off" placeholder="Escanea o escribe un código" aria-label="Código de producto">
       <button class="primary" type="submit">Buscar</button>
@@ -79,11 +83,11 @@ footer{margin-top:20px;font-size:.82rem;color:var(--muted)}
       <button id="stopButton" type="button" hidden>Detener cámara</button>
     </div>
     <video id="video" playsinline muted hidden></video>
-    <p id="status" class="status" role="status">Pulsa “Abrir cámara” y apunta al código de barras o DataMatrix.</p>
+    <p id="status" class="status" role="status">Pulsa “Abrir cámara” y apunta al código de barras.</p>
     <p class="tip">Consejo: usa buena iluminación, enfoca el código completo y evita reflejos. En móviles, concede permiso para usar la cámara.</p>
   </section>
 
-  <section class="panel" aria-live="polite">
+  <section class="panel" id="panelProducto" aria-live="polite" hidden>
     <div class="resulttop"><h2>Información del producto</h2><span id="resultPill" class="pill">Esperando lectura</span></div>
     <div id="result"><div class="empty">Cuando se detecte un código, los datos aparecerán aquí automáticamente.</div></div>
   </section>
@@ -93,7 +97,6 @@ footer{margin-top:20px;font-size:.82rem;color:var(--muted)}
   <div class="historyhead"><h2>Historial de esta sesión · <span id="historyCount">0</span></h2><div class="actions" style="margin:0"><button id="exportButton" type="button">Exportar CSV</button><button id="clearButton" type="button">Vaciar historial</button></div></div>
   <div id="history"><div class="empty">Las lecturas aparecerán aquí.</div></div>
 </section>
-<footer>La base de productos procede del catálogo incorporado en esta página. La información del lote, vencimiento, fabricación y serie solo aparecerá si está codificada en la etiqueta. Verifica siempre la información contra el empaque físico antes de cualquier uso clínico.</footer>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -218,6 +221,7 @@ function saveHistory(){try{localStorage.setItem('bscScanHistory',JSON.stringify(
 function showStatus(text,type=''){ $('status').textContent=text; $('status').className='status '+type; }
 
 function renderResult(res){
+  $('panelProducto').hidden=false; $('layout').classList.remove('sin-resultado');   // se muestra al leer el primer código
   const p=res.index>=0?product(res.index):null, a=res.ais||{};
   if(res.candidates){
     $('resultPill').textContent='Búsqueda';
@@ -315,7 +319,7 @@ $('cameraButton').addEventListener('click',async()=>{
         processCode(text,'cámara');
       }
     });
-    showStatus('Cámara activa. Apunta al código de barras o DataMatrix.','success');
+    showStatus('Cámara activa. Apunta al código de barras.','success');
   }catch(err){
     stopCamera();
     showStatus('No se pudo iniciar la cámara. Revisa el permiso del navegador y vuelve a intentarlo.','error');
@@ -348,9 +352,17 @@ $('exportButton').addEventListener('click',()=>{
   const blob=new Blob(['\ufeff'+rows.map(r=>r.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='historial-lecturas.csv';a.click();URL.revokeObjectURL(a.href);
 });
+// Confirmación en el mismo botón: dentro de un recuadro incrustado el navegador puede bloquear confirm()
+let confirmarVaciado=null;
 $('clearButton').addEventListener('click',()=>{
-  if(!historyItems.length)return;
-  if(!confirm('¿Quieres borrar el historial guardado en este navegador?'))return;
+  if(!historyItems.length){showStatus('El historial ya está vacío.');return;}
+  const boton=$('clearButton');
+  if(!confirmarVaciado){
+    boton.textContent='¿Seguro? Pulsa otra vez';
+    confirmarVaciado=setTimeout(()=>{confirmarVaciado=null;boton.textContent='Vaciar historial';},4000);
+    return;
+  }
+  clearTimeout(confirmarVaciado);confirmarVaciado=null;boton.textContent='Vaciar historial';
   historyItems=[];saveHistory();renderHistory();showStatus('Historial borrado.','success');
 });
 renderHistory();
@@ -383,7 +395,8 @@ if (window.parent !== window) {
     $('result').appendChild(caja);
   };
   // Altura: al cargar, tras cada lectura o borrado del historial, y cuando cambia el tamaño
-  const enviarAlto = () => enviar({tipo: 'lector-boston-alto', alto: document.documentElement.scrollHeight});
+  // Se mide hasta el final del contenido (no la ventana): si se midiera la ventana, el recuadro nunca podría encogerse
+  const enviarAlto = () => enviar({tipo: 'lector-boston-alto', alto: Math.ceil(document.querySelector('main').getBoundingClientRect().bottom + window.scrollY) + 32});
   const procesarOriginal = processCode;
   processCode = function(raw, source){ procesarOriginal(raw, source); setTimeout(enviarAlto, 50); };
   ['load', 'resize', 'click'].forEach(ev => window.addEventListener(ev, () => setTimeout(enviarAlto, 50)));

@@ -4,6 +4,7 @@ REGISTRO DE IMPLANTES - BOSTON SCIENTIFIC (IBIOHACK)
 
 ARCHIVOS
 --------
+Iniciar Registro Implantes.bat       Doble clic para encender el servidor y abrir la app
 index.html, style.css, script.js     La app: pantallas Inicio, Opciones, Registrar y Buscar
 formulario\index.html                Formulario de registro y consulta por cédula
 formulario\lector_boston.html        Lector de etiqueta del dispositivo (de Lector-De-Boston)
@@ -19,17 +20,20 @@ servidor\dataverse_sesion.json       Sesión de Dataverse de este computador (pe
 
 CÓMO ARRANCARLA
 ---------------
-1. Servidor (una ventana de PowerShell, dejarla abierta):
+Doble clic en  "Iniciar Registro Implantes.bat"  (en esta carpeta).
+Enciende el servidor y abre la app en el navegador:  http://127.0.0.1:8001/
+Deja abierta la ventana negra mientras uses la app; al cerrarla se apaga.
+(Si ya estaba encendido, solo abre la app.)
+
+A mano, si se prefiere:
      cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0\servidor"
      python "App (1).py"
-   Debe decir: "Los pacientes se guardan en: Dataverse https://orgc950bd5e.crm2.dynamics.com"
+   y abrir http://127.0.0.1:8001/
 
-2. App (otra ventana de PowerShell, dejarla abierta):
-     cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0"
-     python -m http.server 8766 --bind 127.0.0.1
-   Abrir en el navegador:  http://localhost:8766/
+La plantilla "IMPLANT REPORTS - PLANTILLA UNIANDES_0685.xlsx" debe estar en la carpeta
+servidor para que "Descargar todos los registros en Excel" funcione.
 
-3. Si al guardar sale un error de Dataverse (la sesión caduca cada cierto tiempo):
+Si al guardar sale un error de Dataverse (la sesión caduca cada cierto tiempo):
      cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0\servidor"
      python dataverse_conexion.py
    e iniciar sesión en la ventana de Microsoft que se abre.

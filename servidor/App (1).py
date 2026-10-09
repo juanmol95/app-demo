@@ -17,6 +17,7 @@ from pathlib import Path
 import openpyxl
 from fastapi import Body
 from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 import io
 import copy
 import openpyxl.styles
@@ -222,7 +223,7 @@ async def extraer_paciente(file: UploadFile = File(...)):
 
 CARPETA = Path(__file__).resolve().parent
 BASE_DATOS = CARPETA / "registros.db"        # aquí quedan los pacientes (un solo archivo)
-PAGINA = CARPETA / "registro_p.html"
+candado_guardar = threading.Lock()           # los guardados van de uno en uno (evita pacientes duplicados)
 candado_reporte = threading.Lock()           # el reporte se genera de a uno (usa Excel)
 
 
@@ -387,7 +388,8 @@ def guardar_registro(registro: dict = Body(...)):
         raise HTTPException(status_code=400, detail="El número de documento del paciente es obligatorio.")
 
     try:
-        accion = almacen_guardar(registro, documento)
+        with candado_guardar:      # si llegan dos guardados a la vez, el segundo encuentra al paciente y lo actualiza
+            accion = almacen_guardar(registro, documento)
     except Exception as err:
         raise error_dataverse(err)
     anotar_bitacora(accion, documento, nombre_especialista(registro))
@@ -611,16 +613,42 @@ def descargar_reporte(nombre: str):
     return FileResponse(ruta)
 
 
-# ---------- La página ----------
+# ---------- La app (así basta con encender este servidor y abrir http://127.0.0.1:8001/) ----------
+# Solo se publican los archivos de la app; la carpeta "servidor" (sesión, plantilla, código) no.
+APP_WEB = CARPETA.parent
+
+
+@app.middleware("http")
+async def revisar_version_nueva(request, call_next):
+    """Las páginas de la app se revisan en cada visita: así un cambio se ve con un F5 normal."""
+    respuesta = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        respuesta.headers["Cache-Control"] = "no-cache"
+    return respuesta
+
+
 @app.get("/")
 def pagina():
-    return FileResponse(PAGINA)
+    return FileResponse(APP_WEB / "index.html")
+
+
+@app.get("/style.css")
+def estilos():
+    return FileResponse(APP_WEB / "style.css")
+
+
+@app.get("/script.js")
+def guion():
+    return FileResponse(APP_WEB / "script.js")
+
+
+app.mount("/formulario", StaticFiles(directory=APP_WEB / "formulario"), name="formulario")
 
 
 if __name__ == "__main__":
     # 127.0.0.1 = solo este computador. Para que otros equipos de la misma red entren,
     # ejecutar con:  set HOST=0.0.0.0   (en PowerShell:  $env:HOST="0.0.0.0")  y luego  py App.py
     HOST = os.environ.get("HOST", "127.0.0.1")
-    print("Abre en el navegador:  http://127.0.0.1:8001")
+    print("Abre la app en el navegador:  http://127.0.0.1:8001/")
     print("Los pacientes se guardan en:", ("Dataverse " + dvr.dv.DATAVERSE_URL) if USAR_DATAVERSE else BASE_DATOS)
     uvicorn.run(app, host=HOST, port=8001)

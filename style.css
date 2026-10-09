@@ -525,3 +525,12 @@ body {
 .metodos-busqueda[hidden] {
     display: none;
 }
+
+
+/* TÍTULOS CON LA LETRA DEL LOGO DE LA PANTALLA INICIAL */
+
+.contenido-opciones h1,
+.contenido-tercera h1,
+.metodo-busqueda h2 {
+    font-family: "Bodoni 72", "Bodoni MT", Didot, Georgia, serif;
+}
