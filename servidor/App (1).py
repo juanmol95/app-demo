@@ -18,6 +18,7 @@ import openpyxl
 from fastapi import Body
 from fastapi.responses import FileResponse, Response
 import io
+import copy
 import openpyxl.styles
 import openpyxl.utils
 import generador_reporte as generador   # el módulo que genera el Implant Report
@@ -416,51 +417,119 @@ def eliminar_registro(documento: str):
     return {"exito": True, "eliminado": borrado}
 
 
-# ---------- Exportar todos los registros a Excel ----------
-def aplanar(valor, prefijo, fila):
-    """Convierte el registro (diccionarios y listas anidadas) en columnas: 'paciente · documento', 'medicos · 1 · nombre'..."""
-    if isinstance(valor, dict):
-        for clave, v in valor.items():
-            aplanar(v, f"{prefijo} · {clave}" if prefijo else clave, fila)
-    elif isinstance(valor, list):
-        for i, v in enumerate(valor, start=1):
-            aplanar(v, f"{prefijo} · {i}", fila)
-    else:
-        fila[prefijo] = "" if valor is None else valor
+# ---------- Exportar todos los registros a Excel (formato IMPLANT REPORTS - PLANTILLA UNIANDES) ----------
+# Se abre la plantilla de la empresa, se conservan sus dos filas de encabezado (nombres y grupos),
+# se quitan las filas de ejemplo y se escribe un paciente por fila desde la fila 3.
+PLANTILLA_EXPORTAR = CARPETA / "IMPLANT REPORTS - PLANTILLA UNIANDES_0685.xlsx"
+FILA_INICIO = 3
+
+
+def _fecha_excel(texto):
+    try:
+        return datetime.datetime.strptime(str(texto).strip(), "%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def _numero_excel(texto):
+    """'60' -> 60, '0.4' -> 0.4; lo que no es número se deja como texto (o vacío)."""
+    t = "" if texto is None else str(texto).strip()
+    if not t:
+        return None
+    try:
+        n = float(t.replace(",", "."))
+        return int(n) if n.is_integer() else n
+    except ValueError:
+        return t
+
+
+def _unir(*partes):
+    return " ".join(str(p).strip() for p in partes if p and str(p).strip()) or None
+
+
+def fila_plantilla(registro):
+    """Columna de la plantilla -> valor, para un registro del formulario."""
+    p = registro.get("paciente", {})
+    esp = registro.get("especialista", {})
+    diag = registro.get("diagnostico", {})
+    hosp = registro.get("hospital", {})
+    imp = registro.get("implante", {})
+    disp = imp.get("dispositivo", {})
+    par = imp.get("parametros", {})
+    medicos = registro.get("medicos") or []
+    implantador = next((m for m in medicos if m.get("rol") == "Implanting"), medicos[0] if medicos else {})
+    fecha_implante = _fecha_excel(imp.get("fecha_implante"))
+    fe = _numero_excel(diag.get("fraccion_eyeccion"))
+
+    fila = {
+        # Datos del implante
+        "A": fecha_implante, "B": (_unir(esp.get("nombre"), esp.get("apellido")) or "").upper() or None,
+        # Datos del paciente
+        "C": _unir(p.get("primer_nombre"), p.get("segundo_nombre")),
+        "D": _unir(p.get("primer_apellido"), p.get("segundo_apellido")),
+        "E": diag.get("indicacion_principal") or None,
+        "F": fe / 100 if isinstance(fe, (int, float)) else fe,          # el formulario pide % (25) y la plantilla usa 0.25
+        "G": p.get("sexo") or None, "H": _fecha_excel(p.get("fecha_nacimiento")),
+        "I": _numero_excel(p.get("documento")), "J": p.get("direccion") or None, "K": p.get("telefono") or None,
+        "L": p.get("ciudad") or None, "M": p.get("departamento") or None, "N": p.get("pais") or None,
+        # Datos del médico (implantador)
+        "O": implantador.get("nombre") or None, "P": implantador.get("apellido") or None,
+        "Q": hosp.get("nombre") or None, "R": hosp.get("direccion") or None, "S": hosp.get("telefono") or None,
+        "T": hosp.get("ciudad") or None, "U": hosp.get("departamento") or None, "V": p.get("pais") or None,
+        # Dispositivo implantado y su configuración
+        "W": disp.get("modelo") or None, "X": _numero_excel(disp.get("serial")), "Y": disp.get("fabricante") or None,
+        "Z": fecha_implante, "AA": disp.get("ubicacion") or None, "AB": par.get("modo") or None,
+        "AC": _numero_excel(par.get("lrl")), "AD": _numero_excel(par.get("url")), "AE": _numero_excel(par.get("av_delay")),
+        "AF": _numero_excel(par.get("pvarp")), "AG": _numero_excel(par.get("v_ref")),
+        "AH": par.get("av_search") or None, "AI": par.get("vrr") or None, "AJ": par.get("atr") or None, "AK": par.get("sbr") or None,
+    }
+
+    # Electrodos: columna inicial de cada bloque (Modelo, Serial, Fabricante, F. Implante,
+    # Polaridad, Position, Onda, Paced, Impedancia, HV, Ancho, Umbral, DFT, A.Fib)
+    bloques = {"ventricular_derecho": "AL", "auricular_derecho": "AZ", "ventricular_izquierdo": "BN"}
+    for clave, inicio in bloques.items():
+        e = (imp.get("electrodos") or {}).get(clave) or {}
+        if not str(e.get("modelo") or "").strip():
+            continue                                     # solo los electrodos implantados (con modelo)
+        n = openpyxl.utils.column_index_from_string(inicio)
+        col = lambda i: openpyxl.utils.get_column_letter(n + i)
+        fila.update({
+            col(0): _numero_excel(e.get("modelo")), col(1): _numero_excel(e.get("serial")), col(3): fecha_implante,
+            col(4): e.get("polaridad") or None, col(5): e.get("posicion") or None, col(6): _numero_excel(e.get("onda")),
+            col(8): _numero_excel(e.get("impedancia")), col(10): _numero_excel(e.get("ancho")), col(11): _numero_excel(e.get("umbral")),
+        })
+    return fila
 
 
 @app.get("/api/exportar-excel")
 def exportar_excel():
+    if not PLANTILLA_EXPORTAR.is_file():
+        raise HTTPException(status_code=500, detail="Falta la plantilla en la carpeta del servidor: " + PLANTILLA_EXPORTAR.name)
     try:
         registros = almacen_listar()
     except Exception as err:
         raise error_dataverse(err)
 
-    filas, columnas = [], ["documento", "creado", "actualizado"]
-    for documento, creado, actualizado, registro in registros:
-        fila = {"documento": documento, "creado": creado, "actualizado": actualizado}
-        aplanar(registro, "", fila)
-        for c in fila:
-            if c not in columnas:
-                columnas.append(c)
-        filas.append(fila)
+    libro = openpyxl.load_workbook(PLANTILLA_EXPORTAR)
+    hoja = libro.worksheets[0]
+    formatos = {c.column_letter: copy.copy(c._style) for c in hoja[FILA_INICIO]}     # formato de la primera fila de datos
+    if hoja.max_row >= FILA_INICIO:
+        hoja.delete_rows(FILA_INICIO, hoja.max_row - FILA_INICIO + 1)                   # quitar los ejemplos
 
-    libro = openpyxl.Workbook()
-    hoja = libro.active
-    hoja.title = "Registros"
-    hoja.append(columnas)
-    for fila in filas:
-        hoja.append([fila.get(c, "") for c in columnas])
-    for celda in hoja[1]:
-        celda.font = openpyxl.styles.Font(bold=True)
-    hoja.freeze_panes = "B2"
-    hoja.auto_filter.ref = hoja.dimensions
-    for i, c in enumerate(columnas, start=1):
-        hoja.column_dimensions[openpyxl.utils.get_column_letter(i)].width = min(max(len(c), 12), 40)
+    for i, (_documento, _creado, _actualizado, registro) in enumerate(registros):
+        r = FILA_INICIO + i
+        for col, estilo in formatos.items():
+            hoja[f"{col}{r}"]._style = copy.copy(estilo)
+        for col, valor in fila_plantilla(registro).items():
+            if valor not in (None, ""):
+                celda = hoja[f"{col}{r}"]
+                celda.value = valor
+                if isinstance(valor, datetime.datetime):
+                    celda.number_format = "d-mmm-yy"      # mismo formato de fecha que la plantilla
 
     contenido = io.BytesIO()
     libro.save(contenido)
-    nombre = f"registros_{datetime.date.today().isoformat()}.xlsx"
+    nombre = f"IMPLANT REPORTS {datetime.date.today().isoformat()}.xlsx"
     return Response(content=contenido.getvalue(),
                     media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": f'attachment; filename="{nombre}"'})

@@ -5,3 +5,7 @@ servidor/registros.db
 servidor/salidas/
 # Archivos temporales de Python
 __pycache__/
+# Plantilla de la empresa (Boston Scientific): no subir a un repositorio público
+servidor/IMPLANT REPORTS - PLANTILLA UNIANDES_0685.xlsx
+# Archivos temporales de Excel abierto
+~$*
