@@ -9,3 +9,5 @@ __pycache__/
 servidor/IMPLANT REPORTS - PLANTILLA UNIANDES_0685.xlsx
 # Archivos temporales de Excel abierto
 ~$*
+# Certificado https local (contiene una clave privada)
+servidor/certificado/

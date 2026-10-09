@@ -7,6 +7,7 @@ Médico del implante. Por ahora hay un implante por paciente, igual que antes:
 guardar de nuevo el mismo documento actualiza su registro.
 """
 
+import datetime
 import json
 
 import dataverse_conexion as dv
@@ -52,9 +53,15 @@ def _texto(v):
     return v or None
 
 
-def _fecha(v):
+def _fecha(v, nombre="Fecha", minimo="1900-01-01"):
+    """AAAA-MM-DD entre 'minimo' y hoy; una fecha imposible (año 1111, 9999999...) se rechaza con un mensaje claro."""
     v = _texto(v)
-    return v if v and len(v) == 10 else None          # AAAA-MM-DD
+    if not v:
+        return None
+    hoy = datetime.date.today().isoformat()
+    if len(v) != 10 or not (minimo <= v <= hoy):
+        raise ValueError(f"{nombre} no válida ({v}): debe estar entre {minimo[8:]}/{minimo[5:7]}/{minimo[:4]} y hoy.")
+    return v
 
 
 def _numero(v, entero=False):
@@ -120,12 +127,16 @@ def guardar(registro):
     documento = _texto(p.get("documento"))
     if not documento:
         raise ValueError("El número de documento del paciente es obligatorio.")
+    # Validar todas las fechas antes de escribir nada
+    _fecha(p.get("fecha_nacimiento"), "Fecha de nacimiento")
+    _fecha(registro.get("fecha_diligenciamiento"), "Fecha de diligenciamiento", "2000-01-01")
+    _fecha((registro.get("implante") or {}).get("fecha_implante"), "Fecha de implante", "1960-01-01")
 
     datos_paciente = {
         "bsc_name": documento, "bsc_historiaclinica": _texto(p.get("medical_record")),
         "bsc_primernombre": _texto(p.get("primer_nombre")), "bsc_segundonombre": _texto(p.get("segundo_nombre")),
         "bsc_primerapellido": _texto(p.get("primer_apellido")), "bsc_segundoapellido": _texto(p.get("segundo_apellido")),
-        "bsc_sufijo": _texto(p.get("sufijo")), "bsc_fechanacimiento": _fecha(p.get("fecha_nacimiento")),
+        "bsc_sufijo": _texto(p.get("sufijo")), "bsc_fechanacimiento": _fecha(p.get("fecha_nacimiento"), "Fecha de nacimiento"),
         "bsc_sexo": _texto(p.get("sexo")), "bsc_rh": _texto(p.get("rh")), "bsc_eps": _texto(p.get("eps")),
         "bsc_direccion": _texto(p.get("direccion")), "bsc_telefono": _texto(p.get("telefono")),
         "bsc_ciudad": _texto(p.get("ciudad")), "bsc_departamento": _texto(p.get("departamento")),
@@ -146,7 +157,7 @@ def guardar(registro):
     par = imp.get("parametros", {})
     datos_implante = {
         "bsc_name": f"{documento} · {imp.get('fecha_implante') or registro.get('fecha_diligenciamiento') or ''}".strip(" ·"),
-        "bsc_fechadiligenciamiento": _fecha(registro.get("fecha_diligenciamiento")),
+        "bsc_fechadiligenciamiento": _fecha(registro.get("fecha_diligenciamiento"), "Fecha de diligenciamiento", "2000-01-01"),
         "bsc_especialistanombre": _texto(esp.get("nombre")), "bsc_especialistaapellido": _texto(esp.get("apellido")),
         "bsc_diagnostico": _texto(diag.get("indicacion_principal")),
         "bsc_fraccioneyeccion": _numero(diag.get("fraccion_eyeccion")),
@@ -154,7 +165,7 @@ def guardar(registro):
         "bsc_hospitalnombre": _texto(hosp.get("nombre")), "bsc_hospitaldireccion": _texto(hosp.get("direccion")),
         "bsc_hospitalciudad": _texto(hosp.get("ciudad")), "bsc_hospitaldepartamento": _texto(hosp.get("departamento")),
         "bsc_hospitaltelefono": _texto(hosp.get("telefono")),
-        "bsc_fechaimplante": _fecha(imp.get("fecha_implante")), "bsc_modelo": _texto(disp.get("modelo")),
+        "bsc_fechaimplante": _fecha(imp.get("fecha_implante"), "Fecha de implante", "1960-01-01"), "bsc_modelo": _texto(disp.get("modelo")),
         "bsc_serial": _texto(disp.get("serial")), "bsc_fabricante": _texto(disp.get("fabricante")),
         "bsc_ubicacion": _texto(disp.get("ubicacion")), "bsc_modo": _texto(par.get("modo")),
         "bsc_lrl": _numero(par.get("lrl"), True), "bsc_url": _numero(par.get("url"), True),

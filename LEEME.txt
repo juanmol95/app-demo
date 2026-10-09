@@ -5,6 +5,7 @@ REGISTRO DE IMPLANTES - BOSTON SCIENTIFIC (IBIOHACK)
 ARCHIVOS
 --------
 Iniciar Registro Implantes.bat       Doble clic para encender el servidor y abrir la app
+Iniciar para celular.bat             Igual, con https y visible en la red Wi-Fi (para usarla desde el celular)
 index.html, style.css, script.js     La app: pantallas Inicio, Opciones, Registrar y Buscar
 formulario\index.html                Formulario de registro y consulta por cédula
 formulario\lector_boston.html        Lector de etiqueta del dispositivo (de Lector-De-Boston)
@@ -14,6 +15,7 @@ servidor\App (1).py                  Servidor Python (puerto 8001): guarda y con
 servidor\dataverse_conexion.py       Inicio de sesión con Microsoft Dataverse
 servidor\dataverse_registros.py      Guardar / consultar / eliminar en Dataverse
 servidor\dataverse_crear_tablas.py   Crea las tablas en Dataverse (ya se ejecutó una vez)
+servidor\certificado_https.py        Crea el certificado https del modo celular
 servidor\generador_reporte.py        Reporte oficial en Excel (necesita la plantilla de la empresa)
 servidor\dataverse_sesion.json       Sesión de Dataverse de este computador (personal, no compartir)
 
@@ -37,6 +39,21 @@ Si al guardar sale un error de Dataverse (la sesión caduca cada cierto tiempo):
      cd "C:\Users\USER\Documents\Juan Diego\+IBIOHACK2.0\servidor"
      python dataverse_conexion.py
    e iniciar sesión en la ventana de Microsoft que se abre.
+
+
+DESDE EL CELULAR (con cámara)
+-----------------------------
+En el celular, 127.0.0.1 es el propio celular: la app tiene que abrirse desde el servidor
+del computador. El modo celular usa https (certificado propio) para que la cámara funcione.
+1. Activa la ZONA WI-FI del celular y conecta el computador a ella
+   (NO uses eduroam ni redes públicas: la app aún no tiene contraseña).
+2. Doble clic en  "Iniciar para celular.bat"  y abre en el celular la dirección https
+   que muestra (por ejemplo https://172.20.10.2:8001/).
+3. La primera vez el celular dirá "La conexión no es privada": pulsa
+   "Configuración avanzada" y luego "Continuar". Después la cámara, la lectura de la
+   cédula y el guardado funcionan.
+4. Si Windows pregunta si Python puede usar la red, permite SOLO "Redes privadas".
+(El certificado se crea solo en servidor\certificado\ y no se sube a GitHub.)
 
 
 DATAVERSE

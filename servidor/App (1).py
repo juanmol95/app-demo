@@ -390,6 +390,8 @@ def guardar_registro(registro: dict = Body(...)):
     try:
         with candado_guardar:      # si llegan dos guardados a la vez, el segundo encuentra al paciente y lo actualiza
             accion = almacen_guardar(registro, documento)
+    except ValueError as err:      # datos no válidos (por ejemplo, una fecha imposible)
+        raise HTTPException(status_code=400, detail=str(err))
     except Exception as err:
         raise error_dataverse(err)
     anotar_bitacora(accion, documento, nombre_especialista(registro))
@@ -649,6 +651,16 @@ if __name__ == "__main__":
     # 127.0.0.1 = solo este computador. Para que otros equipos de la misma red entren,
     # ejecutar con:  set HOST=0.0.0.0   (en PowerShell:  $env:HOST="0.0.0.0")  y luego  py App.py
     HOST = os.environ.get("HOST", "127.0.0.1")
-    print("Abre la app en el navegador:  http://127.0.0.1:8001/")
+    # HTTPS=1 (modo celular): certificado propio, para que el navegador del celular permita la cámara en vivo
+    usar_https = os.environ.get("HTTPS", "") == "1"
+    certificado = clave = None
+    if usar_https:
+        import certificado_https
+        certificado, clave = certificado_https.asegurar_certificado()
+        direcciones = certificado_https.direcciones_locales() if HOST == "0.0.0.0" else ["127.0.0.1"]
+        for ip in direcciones:
+            print(f"Abre la app:  https://{ip}:8001/")
+    else:
+        print("Abre la app en el navegador:  http://127.0.0.1:8001/")
     print("Los pacientes se guardan en:", ("Dataverse " + dvr.dv.DATAVERSE_URL) if USAR_DATAVERSE else BASE_DATOS)
-    uvicorn.run(app, host=HOST, port=8001)
+    uvicorn.run(app, host=HOST, port=8001, ssl_certfile=certificado, ssl_keyfile=clave)

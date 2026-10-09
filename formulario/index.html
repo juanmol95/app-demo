@@ -122,6 +122,8 @@
   .btn-peligro, .btn-eliminar-medico { background: #fff; color: var(--rojo); border: 2px solid var(--rojo); }
   .btn-eliminar-medico { padding: 0.3rem 0.7rem; font-size: 0.8rem; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.15); }
   button:disabled { opacity: 0.55; cursor: not-allowed; }
+  .fecha-invalida { border-color: var(--rojo) !important; outline: 2px solid var(--rojo); }
+  .aviso-fecha { color: var(--rojo); font-size: 0.8rem; font-weight: bold; margin-top: 0.25rem; }
   @media (max-width: 600px) { .acciones { flex-direction: column; } }   /* botones finales uno debajo del otro en celular */
   input[type=file] { border: none; padding: 0; background: none; }
   input[type=file]::file-selector-button {
@@ -239,7 +241,7 @@
           </div>
         </div>
 
-        <div class="grid-3">
+        <div class="grid-2">
           <div class="campo">
             <label>Primer Nombre (First Name):</label>
             <input type="text" id="primer_nombre">
@@ -247,10 +249,6 @@
           <div class="campo">
             <label>Segundo Nombre (Middle Name):</label>
             <input type="text" id="segundo_nombre">
-          </div>
-          <div class="campo">
-            <label>Sufijo (Suffix):</label>
-            <input type="text" id="sufijo_paciente" placeholder="Ej: Jr., Sr.">
           </div>
         </div>
 
@@ -313,7 +311,10 @@
         <div class="grid-3">
           <div class="campo">
             <label>Ciudad (City):</label>
-            <input type="text" id="ciudad" list="lista_ciudades" placeholder="Seleccione o escriba..." oninput="autocompletarDepto(this.value, 'departamento')">
+            <select id="ciudad_select" onchange="elegirCiudad(this.value)">
+              <option value="">-- Seleccione la ciudad --</option>
+            </select>
+            <input type="text" id="ciudad" placeholder="Nombre de la ciudad..." style="display: none; margin-top: 0.4rem;" oninput="autocompletarDepto(this.value, 'departamento')">
           </div>
           <div class="campo">
             <label>Departamento (State):</label>
@@ -647,6 +648,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const hoy = new Date().toISOString().split('T')[0];
   $("fecha_diligenciamiento").value = hoy;
   $("fecha_nacimiento").max = hoy;   // no se puede nacer en el futuro
+  // Fechas con rangos razonables (sin años imposibles como 9999999)
+  $("imp_fecha").min = "1960-01-01";             // los marcapasos implantables existen desde finales de los 50
+  $("imp_fecha").max = hoy;                      // no se puede registrar un implante futuro
+  $("fecha_diligenciamiento").min = "2000-01-01";
+  $("fecha_diligenciamiento").max = hoy;
+  document.querySelectorAll('input[type="date"]').forEach(campo => campo.addEventListener("change", fechasValidas));
   agregarMedico();
   crearElectrodos();
   cargarCatalogos();
@@ -730,6 +737,7 @@ async function cargarCatalogos() {
     console.info("Listas del formulario en uso (sin catálogo del Excel):", err.message);
   }
   llenarSelectHospitales();
+  llenarSelectCiudad();
 }
 
 // La lista desplegable de hospitales toma las mismas opciones que la casilla de texto
@@ -796,11 +804,87 @@ function poblarDispositivo(d) {
   if (d.fabricante) $("imp_fabricante").value = d.fabricante;
 }
 
+// ---------- Validación de fechas ----------
+const fmtFecha = iso => iso.split("-").reverse().join("/");
+
+function avisoFecha(campo, mensaje) {
+  let aviso = campo.parentElement.querySelector(".aviso-fecha");
+  if (!mensaje) {
+    if (aviso) aviso.remove();
+    campo.classList.remove("fecha-invalida");
+    return;
+  }
+  if (!aviso) {
+    aviso = document.createElement("small");
+    aviso.className = "aviso-fecha";
+    campo.insertAdjacentElement("afterend", aviso);
+  }
+  aviso.textContent = mensaje;
+  campo.classList.add("fecha-invalida");
+}
+
+// Revisa todas las fechas del formulario; devuelve true si todas están bien (o vacías)
+function fechasValidas() {
+  let todoBien = true;
+  document.querySelectorAll('#formPaciente input[type="date"]').forEach(campo => {
+    const v = campo.value;
+    let mensaje = "";
+    if (v) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || (campo.min && v < campo.min) || (campo.max && v > campo.max)) {
+        mensaje = `Fecha no válida: debe estar entre ${fmtFecha(campo.min || "1900-01-01")} y ${fmtFecha(campo.max)}.`;
+      } else if (campo.id === "imp_fecha" && $("fecha_nacimiento").value && v < $("fecha_nacimiento").value) {
+        mensaje = "La fecha de implante no puede ser anterior a la fecha de nacimiento.";
+      }
+    } else if (campo.validity.badInput) {
+      mensaje = "Fecha incompleta o no válida.";
+    }
+    avisoFecha(campo, mensaje);
+    if (mensaje) todoBien = false;
+  });
+  return todoBien;
+}
+
 function cambiarPestaña(tabId, btnElement) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
   $(tabId).classList.add('active');
   btnElement.classList.add('active');
+}
+
+// Ciudad del paciente: lista desplegable con las ciudades de la lista del formulario; "Otra" permite escribirla
+function llenarSelectCiudad() {
+  const sel = $("ciudad_select");
+  sel.innerHTML = '<option value="">-- Seleccione la ciudad --</option>';
+  document.querySelectorAll("#lista_ciudades option").forEach(o => {
+    const op = document.createElement("option");
+    op.value = o.value;
+    op.textContent = o.value;
+    sel.appendChild(op);
+  });
+  sel.insertAdjacentHTML("beforeend", '<option value="OTRA">Otra (Especificar)</option>');
+  mostrarCiudad($("ciudad").value);
+}
+
+function elegirCiudad(valor) {
+  const otra = $("ciudad");
+  if (valor === "OTRA") {
+    otra.style.display = "block";
+    otra.value = "";
+    otra.focus();
+  } else {
+    otra.style.display = "none";
+    otra.value = valor;
+    autocompletarDepto(valor, "departamento");
+  }
+}
+
+// Al cargar un paciente guardado: elegir su ciudad en la lista, o "Otra" con la ciudad escrita
+function mostrarCiudad(ciudad) {
+  const sel = $("ciudad_select"), otra = $("ciudad");
+  otra.value = ciudad || "";
+  const enLista = [...sel.options].some(o => o.value && o.value !== "OTRA" && o.value === ciudad);
+  sel.value = !ciudad ? "" : (enLista ? ciudad : "OTRA");
+  otra.style.display = (ciudad && !enLista) ? "block" : "none";
 }
 
 function evaluarEpsOtra(val) {
@@ -1023,7 +1107,14 @@ function autocompletarDepto(ciudad, idTargetDepto) {
     "CALI": "VALLE DEL CAUCA",
     "BARRANQUILLA": "ATLÁNTICO",
     "CARTAGENA": "BOLÍVAR",
-    "BUCARAMANGA": "SANTANDER"
+    "BUCARAMANGA": "SANTANDER",
+    "PEREIRA": "RISARALDA",
+    "MANIZALES": "CALDAS",
+    "CÚCUTA": "NORTE DE SANTANDER",
+    "IBAGUÉ": "TOLIMA",
+    "SANTA MARTA": "MAGDALENA",
+    "VILLAVICENCIO": "META",
+    "PASTO": "NARIÑO"
   };
 
   // Primero los municipios del Excel; si no están, el mapa básico
@@ -1050,6 +1141,12 @@ $("archivo").onchange = e => {
 };
 
 $("btnCam").onclick = async () => {
+  // Por http:// (por ejemplo, desde el celular en la red local) el navegador no permite la cámara en vivo
+  if (!window.isSecureContext || !navigator.mediaDevices) {
+    $("estado").textContent = 'La cámara en vivo solo funciona con https o en este computador. Usa "Seleccionar archivo": en el celular abre la cámara para tomar la foto de la cédula.';
+    $("estado").style.color = "#b3261e";
+    return;
+  }
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
     $("video").srcObject = stream;
@@ -1081,6 +1178,10 @@ $("btnGuardar").onclick = async () => {
   const datos = obtenerObjetoFormulario();
   if (!datos.paciente.documento) {
     alert("El número de documento del paciente es obligatorio.");
+    return;
+  }
+  if (!fechasValidas()) {
+    document.querySelector(".fecha-invalida").scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 
@@ -1116,6 +1217,12 @@ async function generarImplantReport() {
   const estado = $("estado_reporte");
   if (!datos.paciente.documento) {
     alert("El número de documento del paciente es obligatorio.");
+    return;
+  }
+  if (!fechasValidas()) {
+    document.querySelector(".fecha-invalida").scrollIntoView({ behavior: "smooth", block: "center" });
+    estado.style.color = "#b3261e";
+    estado.textContent = "Corrige las fechas marcadas en rojo antes de generar el reporte.";
     return;
   }
 
@@ -1248,7 +1355,6 @@ function obtenerObjetoFormulario() {
       segundo_nombre: $("segundo_nombre").value,
       primer_apellido: $("primer_apellido").value,
       segundo_apellido: $("segundo_apellido").value,
-      sufijo: $("sufijo_paciente").value,
       fecha_nacimiento: $("fecha_nacimiento").value,
       sexo: $("sexo").value,
       rh: $("rh").value,
@@ -1319,13 +1425,12 @@ function cargarDatosEnFormulario(data) {
   $("segundo_nombre").value = p.segundo_nombre || "";
   $("primer_apellido").value = p.primer_apellido || "";
   $("segundo_apellido").value = p.segundo_apellido || "";
-  $("sufijo_paciente").value = p.sufijo || "";
   $("fecha_nacimiento").value = p.fecha_nacimiento || "";
   $("sexo").value = p.sexo || "";
   $("rh").value = p.rh || "";
   $("direccion").value = p.direccion || "";
   $("telefono").value = p.telefono || "";
-  $("ciudad").value = p.ciudad || "";
+  mostrarCiudad(p.ciudad || "");
   $("departamento").value = p.departamento || "";
   $("pais").value = p.pais || "COLOMBIA";
 
@@ -1500,6 +1605,7 @@ async function limpiarFormulario() {
   $("estado").textContent = "Selecciona una imagen o usa la cámara para autocompletar la cédula.";
   $("estado").style.color = "#333";
   $("eps_otra").style.display = "none";
+  mostrarCiudad("");
   $("diagnostico_otro").style.display = "none";
 
   $("contenedor_medicos").innerHTML = "";
